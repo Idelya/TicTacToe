@@ -7,6 +7,12 @@ import Container from "@mui/material/Container";
 const theme = createTheme({
   palette: {
     mode: "dark",
+    primary: {
+      main: "#BB86FC",
+    },
+    secondary: {
+      main: "#03DAC5",
+    },
   },
 });
 

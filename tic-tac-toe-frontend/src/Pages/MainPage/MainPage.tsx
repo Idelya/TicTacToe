@@ -4,8 +4,15 @@ import { Rooms } from "../../components/Rooms";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
+import { useNavigate } from "react-router-dom";
 
 const MainPage = () => {
+  const navigate = useNavigate();
+
+  const startGame = () => {
+    navigate("/game");
+  };
+
   return (
     <Box
       sx={{
@@ -44,7 +51,11 @@ const MainPage = () => {
           bottom: 0,
         }}
       >
-        <Button variant="contained" sx={{ m: "auto", mb: 10 }}>
+        <Button
+          variant="contained"
+          sx={{ m: "auto", mb: 10 }}
+          onClick={startGame}
+        >
           New game
         </Button>
       </Box>

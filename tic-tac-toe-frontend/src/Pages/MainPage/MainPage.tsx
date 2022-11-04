@@ -5,8 +5,11 @@ import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
 import { useNavigate } from "react-router-dom";
+import { RootState } from "../../store/store";
+import { useSelector } from "react-redux";
 
 const MainPage = () => {
+  const { userInfo } = useSelector((state: RootState) => state.user);
   const navigate = useNavigate();
 
   const startGame = () => {
@@ -29,6 +32,13 @@ const MainPage = () => {
         sx={{ textAlign: "center", p: 4 }}
       >
         Tic Tac Toe
+      </Typography>
+      <Typography
+        variant="h5"
+        component="span"
+        sx={{ textAlign: "center", p: 4 }}
+      >
+        {" You are logged as " + userInfo?.username || "..."}
       </Typography>
       <Box
         sx={{

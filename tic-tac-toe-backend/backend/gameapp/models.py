@@ -19,19 +19,21 @@ WINNING_TAB = [
 class Game(models.Model):
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
-    board = models.CharField(max_length=9, default="0" * 9)
-    player_x = models.ForeignKey(User, related_name='games', on_delete=models.CASCADE)
-    player_o = models.ForeignKey(User, related_name='games', on_delete=models.CASCADE)
-    winner = models.ForeignKey(User, related_name='games', on_delete=models.CASCADE)
-    status = models.CharField(default="WAITING")
+    board = models.CharField(max_length=9, default=" " * 9)
+    player_x = models.ForeignKey(User, related_name='player_o', on_delete=models.CASCADE, blank=True, null=True)
+    player_o = models.ForeignKey(User, related_name='player_x', on_delete=models.CASCADE, blank=True, null=True)
+    winner = models.ForeignKey(User, related_name='games', on_delete=models.CASCADE, blank=True, null=True)
+    status = models.CharField(max_length=9, default="WAITING")
+    player_x_name = models.CharField(max_length=30, default="", blank=True)
+    player_o_name = models.CharField(max_length=30, default="", blank=True)
 
-    property
-
+    @property
     def next_player(self):
         count = Counter(self.board)
         if count.get('x', 0) > count.get('o', 0):
             return 'o'
         return 'x'
+
 
 
     @property

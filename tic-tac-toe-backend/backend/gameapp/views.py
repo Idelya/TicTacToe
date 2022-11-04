@@ -13,8 +13,8 @@ from backend.gameapp.serializers import GameSerializer
 class RoomsAPI(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
-    def get(self, *args, **kwargs):
-        game = Game.objects.filter(status="WAITING")
+    def get(self, request, *args, **kwargs):
+        game = Game.objects.filter(Q(status="WAITING") & ~Q(player_x=request.user.id) & ~Q(player_o=request.user.id))
         serializer = GameSerializer(game, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -30,7 +30,7 @@ class CurrentGameAPI(APIView):
 
     def get_object(self, user_id):
         try:
-            return Game.objects.filter(Q(player_o=user_id) | Q(player_x=user_id)).filter(Q(status="INPLAY"))[0]
+            return Game.objects.filter(Q(player_o=user_id) | Q(player_x=user_id)).filter(Q(status="INPLAY") | Q(status="WAITING"))
         except Game.DoesNotExist:
             return None
 
@@ -78,14 +78,22 @@ class FinishedGameAPI(APIView):
 class NewGameAPI(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
-    #NEW GAME
+    # NEW GAME
     def post(self, request, *args, **kwargs):
         player_side = request.data.get('player'),
+        print(player_side)
         if player_side == 'x':
-            data = {'player_x': request.user.id}
+            data = {'player_x': request.user.id,
+                    'player_o': None,
+                    'player_x_name': request.user.username,
+                    'player_o_name': ""
+                    }
         else:
             data = {
-                'player_o': request.user.id
+                'player_o': request.user.id,
+                'player_x': None,
+                'player_o_name': request.user.username,
+                'player_x_name': ""
             }
         serializer = GameSerializer(data=data)
         if serializer.is_valid():
@@ -94,10 +102,11 @@ class NewGameAPI(APIView):
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 class JoinGameAPI(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
-    #JOIN GAME
+    # JOIN GAME
     def put(self, request, game_id, *args, **kwargs):
         game = Game.objects.get(id=game_id)
         if not game:
@@ -106,12 +115,13 @@ class JoinGameAPI(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        if game.player_o:
-            data = {'player_x': request.user.id, status: "INPLAY"}
-        else:
+        if game.player_o is None:
             data = {
-                'player_o': request.user.id, status: "INPLAY"
+                'player_o': request.user.id, 'status': "INPLAY", 'player_o_name': request.user.username
             }
+        else:
+            data = {'player_x': request.user.id, 'status': "INPLAY", 'player_x_name': request.user.username}
+
         serializer = GameSerializer(instance=game, data=data, partial=True)
         if serializer.is_valid():
             serializer.save()
@@ -125,8 +135,8 @@ class UserStatsAPI(APIView):
     def get(self, resuest, *args, **kwargs):
         user_id = resuest.user.id
         games_all = Game.objects.filter(Q(player_o=user_id) | Q(player_x=user_id)).filter(status="FINISHED")
-        games_win = games_all.filter(winner = user_id)
-        games_tie = games_all.filter(winner = None)
+        games_win = games_all.filter(winner=user_id)
+        games_tie = games_all.filter(winner=None)
         data = {
             'all': len(games_all),
             'win': len(games_win),

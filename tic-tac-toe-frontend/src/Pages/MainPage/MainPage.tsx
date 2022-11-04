@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Stats } from "../../components/Stats";
 import { Rooms } from "../../components/Rooms";
 import Box from "@mui/material/Box";
@@ -7,13 +7,57 @@ import Button from "@mui/material/Button";
 import { useNavigate } from "react-router-dom";
 import { RootState } from "../../store/store";
 import { useSelector } from "react-redux";
+import axios from "axios";
+import { BACKEND_API } from "../../const";
+import { Game } from "../../types/types";
 
+const fetchGame = async (token: string) => {
+  try {
+    const response = await axios.get(BACKEND_API + "api/game/current/", {
+      headers: {
+        Authorization: "Token " + token,
+      },
+    });
+    return response;
+  } catch (error) {
+    console.log(error);
+  }
+};
+async function startNewGame(token: string) {
+  try {
+    const response = await axios.post(
+      BACKEND_API + "api/game/new/",
+      { player: "x" },
+      {
+        headers: {
+          Authorization: "Token " + token,
+        },
+      }
+    );
+    return response;
+  } catch (error) {
+    console.log(error);
+  }
+}
 const MainPage = () => {
+  const { userToken } = useSelector((state: RootState) => state.user);
   const { userInfo } = useSelector((state: RootState) => state.user);
+  const [game, setGame] = useState<null | Game>();
+  useEffect(() => {
+    if (userToken) {
+      fetchGame(userToken).then((res) => setGame(res?.data[0]));
+    }
+  }, [userToken]);
+
   const navigate = useNavigate();
 
   const startGame = () => {
-    navigate("/game");
+    if (userToken) {
+      startNewGame(userToken).then((res) => {
+        const id = res?.data.id;
+        navigate("/game/" + id);
+      });
+    }
   };
 
   return (
@@ -61,13 +105,23 @@ const MainPage = () => {
           bottom: 0,
         }}
       >
-        <Button
-          variant="contained"
-          sx={{ m: "auto", mb: 10 }}
-          onClick={startGame}
-        >
-          New game
-        </Button>
+        {!game ? (
+          <Button
+            variant="contained"
+            sx={{ m: "auto", mb: 10 }}
+            onClick={startGame}
+          >
+            New game
+          </Button>
+        ) : (
+          <Button
+            variant="contained"
+            sx={{ m: "auto", mb: 10 }}
+            onClick={() => navigate("/game/" + game.id)}
+          >
+            Back to game
+          </Button>
+        )}
       </Box>
     </Box>
   );

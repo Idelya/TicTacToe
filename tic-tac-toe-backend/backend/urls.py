@@ -10,10 +10,10 @@ urlpatterns = [
     path('api/logout/', knox_views.LogoutView.as_view(), name='logout'),
     path('api/login/', LoginAPI.as_view(), name='login'),
     path('api/login/', LoginAPI.as_view(), name='login'),
-    path('api/game/rooms', RoomsAPI.as_view(), name='rooms'),
-    path('api/game/current', CurrentGameAPI.as_view(), name='current_game'),
-    path('api/game/new', NewGameAPI.as_view(), name='new_game'),
-    path('api/game/stats', UserStatsAPI.as_view(), name='stats'),
+    path('api/game/rooms/', RoomsAPI.as_view(), name='rooms'),
+    path('api/game/current/', CurrentGameAPI.as_view(), name='current_game'),
+    path('api/game/new/', NewGameAPI.as_view(), name='new_game'),
+    path('api/game/stats/', UserStatsAPI.as_view(), name='stats'),
     path('api/game/<int:game_id>/', JoinGameAPI.as_view(), name='join'),
 ]
 

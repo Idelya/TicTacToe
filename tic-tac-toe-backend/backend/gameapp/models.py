@@ -23,7 +23,7 @@ class Game(models.Model):
     board = models.CharField(max_length=9, default="_" * 9)
     player_x = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='player_o', on_delete=models.CASCADE, blank=True, null=True)
     player_o = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='player_x', on_delete=models.CASCADE, blank=True, null=True)
-    winner = models.ForeignKey(settings.AUTH_USER_MODEL, related_name='games', on_delete=models.CASCADE, blank=True, null=True)
+    winner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, blank=True, null=True)
     status = models.CharField(max_length=9, default="WAITING")
     player_x_name = models.CharField(max_length=30, default="", blank=True)
     player_o_name = models.CharField(max_length=30, default="", blank=True)

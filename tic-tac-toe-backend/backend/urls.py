@@ -1,4 +1,4 @@
-from backend.gameapp.views import RoomsAPI, CurrentGameAPI, NewGameAPI, JoinGameAPI, UserStatsAPI, GameAPI
+from backend.gameapp.views import RoomsAPI, CurrentGameAPI, NewGameAPI, JoinGameAPI, UserStatsAPI, GameAPI, RanksAPI
 from backend.userapp.views import RegisterAPI, UsersAPI, LoginAPI, UserAPI
 from django.urls import path
 from knox import views as knox_views
@@ -16,5 +16,6 @@ urlpatterns = [
     path('api/game/stats/', UserStatsAPI.as_view(), name='stats'),
     path('api/game/<int:game_id>/', JoinGameAPI.as_view(), name='join'),
     path('api/game/details/<int:game_id>/', GameAPI.as_view(), name='game'),
+    path('api/ranks/', RanksAPI.as_view(), name='ranks'),
 ]
 

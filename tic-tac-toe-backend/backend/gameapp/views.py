@@ -1,4 +1,5 @@
-from django.db.models import Q
+from django.contrib.auth.models import User
+from django.db.models import Q, Count
 from django.shortcuts import render
 
 # Create your views here.
@@ -7,7 +8,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from backend.gameapp.models import Game
-from backend.gameapp.serializers import GameSerializer
+from backend.gameapp.serializers import GameSerializer, RankSerializer
+from backend.userapp.serializers import UserSerializer
 
 
 class RoomsAPI(APIView):
@@ -25,7 +27,8 @@ class GameAPI(APIView):
     def get(self, request, game_id, *args, **kwargs):
         player = request.user.id
         game = Game.objects.get(id=game_id)
-        if (game.player_x is not None and game.player_x.id != player) and (game.player_o is not None and game.player_o.id != player):
+        if (game.player_x is not None and game.player_x.id != player) and (
+                game.player_o is not None and game.player_o.id != player):
             return Response("You don't have access", status=status.HTTP_401_UNAUTHORIZED)
         serializer = GameSerializer(game)
         return Response(serializer.data, status=status.HTTP_200_OK)
@@ -165,3 +168,23 @@ class UserStatsAPI(APIView):
             'tie': len(games_tie)
         }
         return Response(data, status=status.HTTP_200_OK)
+
+
+class RanksAPI(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, *args, **kwargs):
+        result=[]
+        for user in User.objects.all():
+            games_all = Game.objects.filter(Q(player_o=user.id) | Q(player_x=user.id)).filter(status="FINISHED")
+            games_win = games_all.filter(winner=user.id)
+            games_tie = games_all.filter(winner=None)
+            data = {
+                'id': user.id,
+                'username': user.username,
+                'all': len(games_all),
+                'win': len(games_win),
+                'tie': len(games_tie)
+            }
+            result.append(data)
+        return Response(result, status=status.HTTP_200_OK)

@@ -20,6 +20,14 @@ export type UserStats = {
   tie: number;
 };
 
+export type RankStats = {
+  id: number;
+  username: string;
+  win: number;
+  all: number;
+  tie: number;
+};
+
 export type Game = {
   id: number;
   board: string;

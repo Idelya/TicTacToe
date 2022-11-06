@@ -42,6 +42,7 @@ class UserAPI(APIView):
 
     def get(self, request, format=None):
         content = {
+            "id": request.user.id,
             "username": request.user.username,
         }
         return Response(content)

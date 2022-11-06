@@ -19,27 +19,48 @@ class RoomsAPI(APIView):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+class GameAPI(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, game_id, *args, **kwargs):
+        player = request.user.id
+        game = Game.objects.get(id=game_id)
+        if (game.player_x is not None and game.player_x.id != player) and (game.player_o is not None and game.player_o.id != player):
+            return Response("You don't have access", status=status.HTTP_401_UNAUTHORIZED)
+        serializer = GameSerializer(game)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 class CurrentGameAPI(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
         player = request.user.id
         game = self.get_object(player)
+        game.first().print_game()
         serializer = GameSerializer(game, many=True)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     def get_object(self, user_id):
         try:
-            return Game.objects.filter(Q(player_o=user_id) | Q(player_x=user_id)).filter(Q(status="INPLAY") | Q(status="WAITING"))
+            return Game.objects.filter(Q(player_o=user_id) | Q(player_x=user_id)).filter(
+                Q(status="INPLAY") | Q(status="WAITING") | Q(status="INPLAY"))
         except Game.DoesNotExist:
             return None
 
     def put(self, request, *args, **kwargs):
-        game = self.get_object(request.user.id)
-        symbol = 'x' if game.player_x == request.user.id else 'y'
-        new_board = game.board
-        new_board[request.data.get('fieldNum')] = symbol
-        winner = game.check_winner(new_board)
+        game = self.get_object(request.user.id).first()
+        print(game.player_x, game.player_x.id, game.player_o, request.user.id)
+        symbol = 'x' if game.player_x_name == request.user.username else 'o'
+        new_board_list = list(game.board)
+        field_num = request.data.get('fieldNum')
+        new_board_list[field_num] = symbol
+        print(new_board_list)
+        new_board = ''.join(new_board_list)
+        print(new_board)
+        print(list(new_board))
+        winner = game.check_winner(board=new_board_list)
+        print(winner)
         if winner is None:
             data = {
                 'board': new_board,
@@ -109,6 +130,7 @@ class JoinGameAPI(APIView):
     # JOIN GAME
     def put(self, request, game_id, *args, **kwargs):
         game = Game.objects.get(id=game_id)
+        game.print_game()
         if not game:
             return Response(
                 {"res": "Object with todo id does not exists"},

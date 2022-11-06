@@ -10,7 +10,7 @@ export type UserLoginData = {
 };
 
 export type UserData = {
-  email: string;
+  id: number;
   username: string;
 };
 

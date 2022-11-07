@@ -1,9 +1,11 @@
 services:
   frontend:
-    build: "tic-tac-toe-frontend/"
+    build:
+      context: "./tic-tac-toe-frontend/"
     ports:
       - "3000:3000"
   backend:
-    build: "tic-tac-toe-backend/"
+    build:
+      context: "./tic-tac-toe-backend/"
     ports:
       - "8000:8000"
